@@ -2,6 +2,7 @@
 <html> 
 <head> 
 <meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Koponen Clicker</title> 
 
 <style> 
@@ -16,10 +17,16 @@ body {
   background: #2c2c3c; 
   padding: 10px; 
   font-size: 20px; 
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 } 
 
 #container { 
   display: flex; 
+  flex-direction: row;
+  height: calc(100vh - 50px);
 } 
 
 .panel { 
@@ -28,12 +35,15 @@ body {
 
 #left { 
   width: 50%; 
-  text-align: center; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
 } 
 
 #right { 
   width: 50%; 
   background: #2a2a3a; 
+  overflow-y: auto;
 } 
 
 button { 
@@ -42,6 +52,8 @@ button {
   border: none; 
   border-radius: 8px; 
   cursor: pointer; 
+  width: 90%;
+  max-width: 300px;
 } 
 
 button:hover { 
@@ -56,10 +68,16 @@ button:hover {
   background: #111; 
   padding: 10px; 
   border-radius: 10px; 
+  z-index: 999;
 } 
 
 #clickImg { 
   transition: transform 0.1s; 
+  width: 70%;
+  max-width: 250px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 } 
 
 #clickImg:active { 
@@ -71,6 +89,30 @@ button:hover {
   padding:8px;
   margin:5px;
   border-radius:8px;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+  #container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  #left, #right {
+    width: 100%;
+  }
+
+  #left {
+    padding: 20px 0;
+  }
+
+  #clickImg {
+    width: 180px;
+  }
+
+  button {
+    width: 95%;
+  }
 }
 </style> 
 </head> 
@@ -88,7 +130,7 @@ button:hover {
   <img id="clickImg" 
     src="https://pbs.twimg.com/profile_images/1805225186213376000/XRYPINlS_400x400.jpg" 
     onclick="clickKoponen()" 
-    width="250"> 
+  > 
 </div> 
 
 <div id="right" class="panel"> 
@@ -135,7 +177,7 @@ button:hover {
   <button onclick="resetGame()">Reset</button> 
 </div> 
 
-<!-- 🐶 Easter Egg Dog -->
+<!-- 🐶 Easter Egg -->
 <img id="easterDog" src="Simo.png" style="
   position: fixed;
   width: 120px;
@@ -154,7 +196,6 @@ let autoCost = 50;
 
 let boostActive = false;
 
-// 🐶 Easter egg control
 let easterEggTriggered = false;
 let dogInterval;
 
@@ -170,7 +211,7 @@ let currentSkin = 0;
 
 const clickSound = new Audio("https://www.soundjay.com/button/sounds/button-16.mp3");
 
-// 🐶 Easter egg function
+// EASTER EGG
 function triggerDogEasterEgg() {
   const dog = document.getElementById("easterDog");
   dog.style.display = "block";
@@ -203,7 +244,6 @@ function updateUI() {
   renderSkins();
   checkAchievements();
 
-  // 🐶 Trigger here
   if (koponen >= 1000000 && !easterEggTriggered) {
     easterEggTriggered = true;
     triggerDogEasterEgg();
