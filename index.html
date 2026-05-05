@@ -1,0 +1,349 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+<meta charset="UTF-8"> 
+<title>Koponen Clicker</title> 
+ 
+<style> 
+body { 
+  font-family: Arial; 
+  background: #1e1e2f; 
+  color: white; 
+  margin: 0; 
+} 
+ 
+#topbar { 
+  background: #2c2c3c; 
+  padding: 10px; 
+  font-size: 20px; 
+} 
+ 
+#container { 
+  display: flex; 
+} 
+ 
+.panel { 
+  padding: 15px; 
+} 
+ 
+#left { 
+  width: 50%; 
+  text-align: center; 
+} 
+ 
+#right { 
+  width: 50%; 
+  background: #2a2a3a; 
+} 
+ 
+button { 
+  padding: 10px; 
+  margin: 5px; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+} 
+ 
+button:hover { 
+  opacity: 0.8; 
+} 
+ 
+#devMenu { 
+  display: none; 
+  position: fixed; 
+  top: 60px; 
+  right: 10px; 
+  background: #111; 
+  padding: 10px; 
+  border-radius: 10px; 
+} 
+ 
+#clickImg { 
+  transition: transform 0.1s; 
+} 
+ 
+#clickImg:active { 
+  transform: scale(0.9); 
+} 
+ 
+.skinBox{
+  background:#333;
+  padding:8px;
+  margin:5px;
+  border-radius:8px;
+}
+</style> 
+</head> 
+ 
+<body> 
+ 
+<div id="topbar"> 
+  Koponen: <span id="counter">0</span> | 
+  ⚡ <span id="boostStatus">Normal</span> 
+</div> 
+ 
+<div id="container"> 
+ 
+<!-- LEFT SIDE --> 
+<div id="left" class="panel"> 
+ 
+  <img id="clickImg" 
+    src="https://pbs.twimg.com/profile_images/1805225186213376000/XRYPINlS_400x400.jpg" 
+    onclick="clickKoponen()" 
+    width="250"> 
+ 
+</div> 
+ 
+<!-- RIGHT SIDE --> 
+<div id="right" class="panel"> 
+ 
+  <h2>Shop</h2> 
+  <button onclick="buyClickUpgrade()">+1 Click (<span id="clickCost">10</span>)</button> 
+  <button onclick="buyAutoUpgrade()">+1 Auto/sec (<span id="autoCost">50</span>)</button> 
+ 
+  <hr> 
+ 
+  <h2>Skins</h2>
+  <div id="skins"></div>
+ 
+  <hr> 
+ 
+  <h2>Abilities</h2> 
+  <button onclick="activateBoost()">⚡ x2 Boost</button> 
+ 
+  <hr> 
+ 
+  <h2>Stats</h2> 
+  <p>Per click: <span id="perClick">1</span></p> 
+  <p>Auto/sec: <span id="perSecond">0</span></p> 
+ 
+  <hr> 
+ 
+  <h2>Achievements</h2> 
+  <p id="achievement"></p> 
+ 
+  <hr> 
+ 
+  <button onclick="saveGame()">💾 Save</button> 
+  <button onclick="loadGame()">📂 Load</button> 
+ 
+</div> 
+ 
+</div> 
+ 
+<!-- DEV MENU --> 
+<button onclick="toggleDevMenu()" style="position:fixed;top:10px;right:10px;background:#444;color:white;">🛠</button> 
+ 
+<div id="devMenu"> 
+  <h3>Debug menu</h3> 
+  <button onclick="koponen+=100000; updateUI()">+100000</button><br> 
+  <button onclick="perClick+=10; updateUI()">+10 Click</button><br> 
+  <button onclick="perSecond+=10; updateUI()">+10 Auto</button><br> 
+  <button onclick="resetGame()">Reset</button> 
+</div> 
+ 
+<script>
+let koponen = 0;
+let perClick = 1;
+let perSecond = 0;
+ 
+let clickCost = 10;
+let autoCost = 50;
+ 
+let boostActive = false;
+ 
+// 🎨 SKINS SYSTEM
+let skins = [
+  {
+    name: "Default",
+    img: "https://pbs.twimg.com/profile_images/1805225186213376000/XRYPINlS_400x400.jpg",
+    cost: 0,
+    owned: true
+  },
+  {
+    name: "Dog",
+    img: "https://placedog.net/400/400?id=10",
+    cost: 200,
+    owned: false
+  },
+  {
+    name: "Cat",
+    img: "https://placekitten.com/400/400",
+    cost: 300,
+    owned: false
+  },
+  {
+    name: "Robot",
+    img: "https://robohash.org/koponen.png",
+    cost: 500,
+    owned: false
+  }
+];
+ 
+let currentSkin = 0;
+ 
+// SOUND
+const clickSound = new Audio("https://www.soundjay.com/button/sounds/button-16.mp3");
+ 
+// UI
+function updateUI() {
+  counter.innerText = koponen;
+  perClickEl.innerText = perClick;
+  perSecondEl.innerText = perSecond;
+  clickCostEl.innerText = clickCost;
+  autoCostEl.innerText = autoCost;
+  boostStatus.innerText = boostActive ? "BOOST ACTIVE" : "Normal";
+ 
+  clickImg.src = skins[currentSkin].img;
+ 
+  renderSkins();
+  checkAchievements();
+}
+ 
+// CLICK
+function clickKoponen() {
+  let gain = boostActive ? perClick * 2 : perClick;
+  koponen += gain;
+  clickSound.play();
+  updateUI();
+}
+ 
+// UPGRADES
+function buyClickUpgrade() {
+  if (koponen >= clickCost) {
+    koponen -= clickCost;
+    perClick++;
+    clickCost = Math.floor(clickCost * 1.5);
+    updateUI();
+  }
+}
+ 
+function buyAutoUpgrade() {
+  if (koponen >= autoCost) {
+    koponen -= autoCost;
+    perSecond++;
+    autoCost = Math.floor(autoCost * 1.7);
+    updateUI();
+  }
+}
+ 
+// AUTO
+setInterval(() => {
+  koponen += perSecond;
+  updateUI();
+}, 1000);
+ 
+// BOOST
+function activateBoost() {
+  if (boostActive) return;
+  boostActive = true;
+  updateUI();
+  setTimeout(() => {
+    boostActive = false;
+    updateUI();
+  }, 10000);
+}
+ 
+// 🧠 SKINS UI
+function renderSkins() {
+  let html = "";
+ 
+  skins.forEach((skin, i) => {
+    html += `
+      <div class="skinBox">
+        <img src="${skin.img}" width="60"><br>
+        <b>${skin.name}</b><br>
+        <button onclick="selectSkin(${i})">
+          ${skin.owned ? (i === currentSkin ? "Equipped" : "Equip") : "Buy (" + skin.cost + ")"}
+        </button>
+      </div>
+    `;
+  });
+ 
+  skinsDiv.innerHTML = html;
+}
+ 
+// BUY / EQUIP
+function selectSkin(i) {
+  let skin = skins[i];
+ 
+  if (!skin.owned) {
+    if (koponen >= skin.cost) {
+      koponen -= skin.cost;
+      skin.owned = true;
+    } else return;
+  }
+ 
+  currentSkin = i;
+  updateUI();
+}
+ 
+// ACHIEVEMENTS
+function checkAchievements() {
+  if (koponen >= 100 && !localStorage.getItem("a1")) {
+    achievement.innerText = "🏆 100 reached!";
+    localStorage.setItem("a1", true);
+  }
+  if (koponen >= 1000 && !localStorage.getItem("a2")) {
+    achievement.innerText = "🏆 1000 reached!";
+    localStorage.setItem("a2", true);
+  }
+}
+ 
+// SAVE / LOAD
+function saveGame() {
+  localStorage.setItem("save", JSON.stringify({
+    koponen,
+    perClick,
+    perSecond,
+    clickCost,
+    autoCost,
+    skins,
+    currentSkin
+  }));
+}
+ 
+function loadGame() {
+  let save = JSON.parse(localStorage.getItem("save"));
+  if (save) {
+    koponen = save.koponen;
+    perClick = save.perClick;
+    perSecond = save.perSecond;
+    clickCost = save.clickCost;
+    autoCost = save.autoCost;
+    skins = save.skins;
+    currentSkin = save.currentSkin;
+  }
+  updateUI();
+}
+ 
+// DEV
+function toggleDevMenu() {
+  devMenu.style.display = devMenu.style.display === "none" ? "block" : "none";
+}
+ 
+function resetGame() {
+  localStorage.clear();
+  location.reload();
+}
+ 
+// AUTO SAVE
+setInterval(saveGame, 5000);
+ 
+// CACHE ELEMENTS
+const counter = document.getElementById("counter");
+const perClickEl = document.getElementById("perClick");
+const perSecondEl = document.getElementById("perSecond");
+const clickCostEl = document.getElementById("clickCost");
+const autoCostEl = document.getElementById("autoCost");
+const boostStatus = document.getElementById("boostStatus");
+const clickImg = document.getElementById("clickImg");
+const skinsDiv = document.getElementById("skins");
+ 
+// START
+window.onload = loadGame;
+updateUI();
+</script>
+ 
+</body>
+</html>
